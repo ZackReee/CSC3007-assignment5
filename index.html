@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+      integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+      crossorigin=""
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css"
+      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+      crossorigin="anonymous"
+    />
+    <style>
+      #map {
+        width: 1000px;
+        height: 600px;
+      }
+    </style>
+    <title>SG PSI</title>
+  </head>
+
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.8.0/leaflet.js"></script>
+    <script
+    src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+    crossorigin=""
+  ></script>
+    <div>
+      <p style="margin-left: 25%; font-weight: bold;">SG PSI Map</p>
+    </div>
+    <div id="map"></div>
+    <script>
+
+
+    //   let tiles = new L.tileLayer(
+    //     "https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png",
+    //     {
+    //       detectRetina: true,
+    //       maxZoom: 18,
+    //       minZoom: 11,
+    //       //Do not remove this attribution
+    //       attribution:
+    //         '<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;">' +
+    //         'New OneMap | Map data © contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>',
+    //     }
+    //   );
+
+    let middle = L.bounds([1.56076, 104.11471], [1.14, 103.510]).getCenter();
+        let map = L.map('map').setView([middle.x, middle.y], 12);
+
+        let basemap = L.tileLayer('https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png', {
+            detectRetina: true,
+            maxZoom: 18,
+            minZoom: 11,
+            //Do not remove this attribution
+          attribution:
+            '<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;">' +
+            'New OneMap | Map data © contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>',
+        });
+
+        map.setMaxBounds([[1.56073, 104.1147], [1.16, 103.502]]);
+        basemap.addTo(map);
+
+        // L.Icon.Default.imagePath = 'https://cdn.onemap.sg/public/js/api/leaflet/images';
+        L.Icon.Default.imagePath = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/";
+
+
+      var dataTable = document.getElementById("bodyTable");
+      var captionTable = document.getElementById("tableCaption");
+      var updatedDateTime = "";
+      var myReq = new XMLHttpRequest();
+      function loadTable() {
+        myReq.open("GET", "https://api.data.gov.sg/v1/environment/psi");
+        myReq.onload = function () {
+          try {
+            var data = JSON.parse(myReq.responseText);
+            updatedDateTime = data.items[0].update_timestamp;
+            var dat = data.items[0].readings;
+            console.log(dat);
+            // makeTable(dat)
+          } catch (e) {
+            console.warn("Could not fetch data from database!");
+          }
+        };
+        myReq.send();
+      }
+
+      function makeTable(dt) {
+        console.log(dt);
+        var row = "";
+        for (var i in dt) {
+          console.log(i);
+          row += `<tr>
+                            <td>${i}</td>
+                            <td>${dt[i].national}</td>
+                            <td>${dt[i].central}</td>
+                            <td>${dt[i].west}</td>
+                            <td>${dt[i].east}</td>
+                            <td>${dt[i].north}</td>
+                            <td>${dt[i].south}</td>
+                        </tr>`;
+        }
+        dataTable.innerHTML = row;
+        captionTable.innerHTML =
+          "Last updated " +
+          moment(updatedDateTime).format("Do MMMM YYYY, h:mm A");
+        console.log(
+          "Jobs Done.",
+          moment(updatedDateTime).format("Do MMMM YYYY, h:mm A")
+        );
+      }
+      document.addEventListener("DOMContentLoaded", () => {
+        loadTable();
+      });
+    </script>
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"
+      integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js"
+      integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
