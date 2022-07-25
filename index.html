@@ -25,63 +25,89 @@
   <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.8.0/leaflet.js"></script>
     <script
-    src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
-    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
-    crossorigin=""
-  ></script>
+      src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+      integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+      crossorigin=""
+    ></script>
     <div>
-      <p style="margin-left: 25%; font-weight: bold;">SG PSI Map</p>
+      <p style="margin-left: 25%; font-weight: bold">SG PSI Map</p>
     </div>
     <div id="map"></div>
     <script>
+      //   let tiles = new L.tileLayer(
+      //     "https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png",
+      //     {
+      //       detectRetina: true,
+      //       maxZoom: 18,
+      //       minZoom: 11,
+      //       //Do not remove this attribution
+      //       attribution:
+      //         '<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;">' +
+      //         'New OneMap | Map data © contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>',
+      //     }
+      //   );
 
+      let middle = L.bounds([1.56076, 104.11471], [1.14, 103.51]).getCenter();
+      let map = L.map("map").setView([middle.x, middle.y], 12);
 
-    //   let tiles = new L.tileLayer(
-    //     "https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png",
-    //     {
-    //       detectRetina: true,
-    //       maxZoom: 18,
-    //       minZoom: 11,
-    //       //Do not remove this attribution
-    //       attribution:
-    //         '<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;">' +
-    //         'New OneMap | Map data © contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>',
-    //     }
-    //   );
-
-    let middle = L.bounds([1.56076, 104.11471], [1.14, 103.510]).getCenter();
-        let map = L.map('map').setView([middle.x, middle.y], 12);
-
-        let basemap = L.tileLayer('https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png', {
-            detectRetina: true,
-            maxZoom: 18,
-            minZoom: 11,
-            //Do not remove this attribution
+      let basemap = L.tileLayer(
+        "https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png",
+        {
+          detectRetina: true,
+          maxZoom: 18,
+          minZoom: 11,
+          //Do not remove this attribution
           attribution:
             '<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;">' +
             'New OneMap | Map data © contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>',
-        });
+        }
+      );
 
-        map.setMaxBounds([[1.56073, 104.1147], [1.16, 103.502]]);
-        basemap.addTo(map);
+      map.setMaxBounds([
+        [1.56073, 104.1147],
+        [1.16, 103.502],
+      ]);
+      basemap.addTo(map);
 
-        // L.Icon.Default.imagePath = 'https://cdn.onemap.sg/public/js/api/leaflet/images';
-        L.Icon.Default.imagePath = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/";
+      // L.Icon.Default.imagePath = 'https://cdn.onemap.sg/public/js/api/leaflet/images';
+      L.Icon.Default.imagePath =
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/";
 
-
-      var dataTable = document.getElementById("bodyTable");
-      var captionTable = document.getElementById("tableCaption");
-      var updatedDateTime = "";
       var myReq = new XMLHttpRequest();
       function loadTable() {
         myReq.open("GET", "https://api.data.gov.sg/v1/environment/psi");
         myReq.onload = function () {
           try {
             var data = JSON.parse(myReq.responseText);
-            updatedDateTime = data.items[0].update_timestamp;
             var dat = data.items[0].readings;
             console.log(dat);
-            // makeTable(dat)
+            var regi = data.region_metadata;
+            console.log(regi);
+
+            const psis = [dat.psi_twenty_four_hourly.west, dat.psi_twenty_four_hourly.national, dat.psi_twenty_four_hourly.east, dat.psi_twenty_four_hourly.central, dat.psi_twenty_four_hourly.south, dat.psi_twenty_four_hourly.north]
+
+            for (i in regi) {
+                console.log(psis[i])
+              var lat = regi[i].label_location.latitude;
+              var lon = regi[i].label_location.longitude;
+              console.log(dat.psi_twenty_four_hourly);
+              var circle = L.circle([lat, lon], {
+                color: "green",
+                fillColor: "lightgreen",
+                fillOpacity: 0.5,
+                radius: 1000,
+              }).addTo(map);
+
+              var text = L.marker([lat, lon],
+                {
+                    icon: L.divIcon({
+                    className: "my-custom-icon",
+                    // html: `<div className="textPosition" style="margin-top:-10px;margin-left:-5px;">${psis[i]}</div>`
+                    html: `<div>${psis[i]}</div>`
+                    }),
+                }
+                ).addTo(map);
+            }
           } catch (e) {
             console.warn("Could not fetch data from database!");
           }
@@ -89,30 +115,30 @@
         myReq.send();
       }
 
-      function makeTable(dt) {
-        console.log(dt);
-        var row = "";
-        for (var i in dt) {
-          console.log(i);
-          row += `<tr>
-                            <td>${i}</td>
-                            <td>${dt[i].national}</td>
-                            <td>${dt[i].central}</td>
-                            <td>${dt[i].west}</td>
-                            <td>${dt[i].east}</td>
-                            <td>${dt[i].north}</td>
-                            <td>${dt[i].south}</td>
-                        </tr>`;
-        }
-        dataTable.innerHTML = row;
-        captionTable.innerHTML =
-          "Last updated " +
-          moment(updatedDateTime).format("Do MMMM YYYY, h:mm A");
-        console.log(
-          "Jobs Done.",
-          moment(updatedDateTime).format("Do MMMM YYYY, h:mm A")
-        );
-      }
+      //   function makeTable(dt) {
+      //     console.log(dt);
+      //     var row = "";
+      //     for (var i in dt) {
+      //       console.log(i);
+      //       row += `<tr>
+      //                         <td>${i}</td>
+      //                         <td>${dt[i].national}</td>
+      //                         <td>${dt[i].central}</td>
+      //                         <td>${dt[i].west}</td>
+      //                         <td>${dt[i].east}</td>
+      //                         <td>${dt[i].north}</td>
+      //                         <td>${dt[i].south}</td>
+      //                     </tr>`;
+      //     }
+      //     dataTable.innerHTML = row;
+      //     captionTable.innerHTML =
+      //       "Last updated " +
+      //       moment(updatedDateTime).format("Do MMMM YYYY, h:mm A");
+      //     console.log(
+      //       "Jobs Done.",
+      //       moment(updatedDateTime).format("Do MMMM YYYY, h:mm A")
+      //     );
+      //   }
       document.addEventListener("DOMContentLoaded", () => {
         loadTable();
       });
