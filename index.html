@@ -1,162 +1,210 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
-      integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
-      crossorigin=""
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css"
-      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
-      crossorigin="anonymous"
-    />
-    <style>
-      #map {
-        width: 1000px;
-        height: 600px;
-      }
-    </style>
-    <title>SG PSI</title>
-  </head>
 
-  <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.8.0/leaflet.js"></script>
-    <script
-      src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
-      integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
-      crossorigin=""
-    ></script>
-    <div>
-      <p style="margin-left: 25%; font-weight: bold">SG PSI Map</p>
-    </div>
-    <div id="map"></div>
+<head>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"
+    integrity="sha512-hoalWLoI8r4UszCkZ5kL8vayOGVae1oxXe/2A4AO6J9+580uKHDO3JdHb7NzwwzK5xr/Fs0W40kiNHxM9vyTtQ=="
+    crossorigin="" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css"
+    integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous" />
+  <style>
+    #map {
+      width: 1000px;
+      height: 600px;
+    }
+  </style>
+  <title>SG PSI</title>
+</head>
+
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.8.0/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js"
+    integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ=="
+    crossorigin=""></script>
+
     <script>
-      //   let tiles = new L.tileLayer(
-      //     "https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png",
-      //     {
-      //       detectRetina: true,
-      //       maxZoom: 18,
-      //       minZoom: 11,
-      //       //Do not remove this attribution
-      //       attribution:
-      //         '<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;">' +
-      //         'New OneMap | Map data © contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>',
-      //     }
-      //   );
-
-      let middle = L.bounds([1.56076, 104.11471], [1.14, 103.51]).getCenter();
-      let map = L.map("map").setView([middle.x, middle.y], 12);
-
-      let basemap = L.tileLayer(
-        "https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png",
-        {
-          detectRetina: true,
-          maxZoom: 18,
-          minZoom: 11,
-          //Do not remove this attribution
-          attribution:
-            '<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;">' +
-            'New OneMap | Map data © contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>',
-        }
-      );
-
-      map.setMaxBounds([
-        [1.56073, 104.1147],
-        [1.16, 103.502],
-      ]);
-      basemap.addTo(map);
-
-      // L.Icon.Default.imagePath = 'https://cdn.onemap.sg/public/js/api/leaflet/images';
-      L.Icon.Default.imagePath =
-        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/";
-
-      var myReq = new XMLHttpRequest();
-      function loadTable() {
-        myReq.open("GET", "https://api.data.gov.sg/v1/environment/psi");
-        myReq.onload = function () {
-          try {
-            var data = JSON.parse(myReq.responseText);
-            var dat = data.items[0].readings;
-            console.log(dat);
-            var regi = data.region_metadata;
-            console.log(regi);
-
-            const psis = [dat.psi_twenty_four_hourly.west, dat.psi_twenty_four_hourly.national, dat.psi_twenty_four_hourly.east, dat.psi_twenty_four_hourly.central, dat.psi_twenty_four_hourly.south, dat.psi_twenty_four_hourly.north]
-
-            for (i in regi) {
-                console.log(psis[i])
-              var lat = regi[i].label_location.latitude;
-              var lon = regi[i].label_location.longitude;
-              console.log(dat.psi_twenty_four_hourly);
-              var circle = L.circle([lat, lon], {
-                color: "green",
-                fillColor: "lightgreen",
-                fillOpacity: 0.5,
-                radius: 1000,
-              }).addTo(map);
-
-              var text = L.marker([lat, lon],
-                {
-                    icon: L.divIcon({
-                    className: "my-custom-icon",
-                    // html: `<div className="textPosition" style="margin-top:-10px;margin-left:-5px;">${psis[i]}</div>`
-                    html: `<div>${psis[i]}</div>`
-                    }),
-                }
-                ).addTo(map);
-            }
-          } catch (e) {
-            console.warn("Could not fetch data from database!");
-          }
-        };
-        myReq.send();
-      }
-
-      //   function makeTable(dt) {
-      //     console.log(dt);
-      //     var row = "";
-      //     for (var i in dt) {
-      //       console.log(i);
-      //       row += `<tr>
-      //                         <td>${i}</td>
-      //                         <td>${dt[i].national}</td>
-      //                         <td>${dt[i].central}</td>
-      //                         <td>${dt[i].west}</td>
-      //                         <td>${dt[i].east}</td>
-      //                         <td>${dt[i].north}</td>
-      //                         <td>${dt[i].south}</td>
-      //                     </tr>`;
-      //     }
-      //     dataTable.innerHTML = row;
-      //     captionTable.innerHTML =
-      //       "Last updated " +
-      //       moment(updatedDateTime).format("Do MMMM YYYY, h:mm A");
-      //     console.log(
-      //       "Jobs Done.",
-      //       moment(updatedDateTime).format("Do MMMM YYYY, h:mm A")
-      //     );
-      //   }
-      document.addEventListener("DOMContentLoaded", () => {
-        loadTable();
-      });
+          let colors = {Good:"#15ff1c", Moderate:"#e0ff00", Unhealthy:"#ffbc00", Very_unhealthy:"#ff3c00", Hazardous:"#7e0000"}
     </script>
-    <script
-      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"
-      integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js"
-      integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
-      crossorigin="anonymous"
-    ></script>
-  </body>
+  <div>
+    <p style="margin-left: 25%; font-weight: bold">SG PSI Map</p>
+  </div>
+  <div id="map"></div>
+
+  <div style="position: absolute;
+    left: 53%;
+    top: 5%;
+    z-index: 20;">
+    <div style="margin-left:12%; margin-bottom: 5%; font-size: 20px;">PSI Value chart
+    </div>
+
+
+    <div>
+      <svg width="40" height="40">
+        <rect x="0" y="0" width="300" height="100" style="fill:#15ff1c" />
+      </svg>
+      Good
+    </div>
+
+    <div>
+      <svg width="40" height="40">
+        <rect x="0" y="0" width="300" height="100" style="fill:#e0ff00" />
+      </svg>
+      Moderate
+    </div>
+
+    <div>
+      <svg width="40" height="40">
+        <rect x="0" y="0" width="300" height="100" style="fill:#ffbc00" />
+      </svg>
+      Unhealthy
+    </div>
+
+    <div >
+      <svg width="40" height="40">
+        <rect x="0" y="0" width="300" height="100" style="fill:#ff3c00" />
+      </svg>
+      Very Unhealthy
+    </div>
+
+    <div>
+      <svg width="40" height="40">
+        <rect x="0" y="0" width="300" height="100" style="fill:#7e0000" />
+      </svg>
+      Must be Indo- I mean Hazardous
+    </div>
+
+  </div>
+
+  <script>
+    //   let tiles = new L.tileLayer(
+    //     "https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png",
+    //     {
+    //       detectRetina: true,
+    //       maxZoom: 18,
+    //       minZoom: 11,
+    //       //Do not remove this attribution
+    //       attribution:
+    //         '<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;">' +
+    //         'New OneMap | Map data © contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>',
+    //     }
+    //   );
+    let middle = L.bounds([1.56076, 104.11471], [1.14, 103.51]).getCenter();
+    let map = L.map("map").setView([middle.x, middle.y], 12);
+
+    let basemap = L.tileLayer(
+      "https://maps-{s}.onemap.sg/v3/Default/{z}/{x}/{y}.png",
+      {
+        detectRetina: true,
+        maxZoom: 18,
+        minZoom: 11,
+        //Do not remove this attribution
+        attribution:
+          '<img src="https://docs.onemap.sg/maps/images/oneMap64-01.png" style="height:20px;width:20px;">' +
+          'New OneMap | Map data © contributors, <a href="http://SLA.gov.sg">Singapore Land Authority</a>',
+      }
+    );
+
+    map.setMaxBounds([
+      [1.56073, 104.1147],
+      [1.16, 103.502],
+    ]);
+    basemap.addTo(map);
+
+    L.Icon.Default.imagePath =
+      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/";
+
+    var myReq = new XMLHttpRequest();
+    function loadTable() {
+      myReq.open("GET", "https://api.data.gov.sg/v1/environment/psi");
+      myReq.onload = function () {
+        try {
+          var data = JSON.parse(myReq.responseText);
+          var dat = data.items[0].readings;
+          console.log(dat);
+          var regi = data.region_metadata;
+          console.log(regi);
+
+          const psis = [dat.psi_twenty_four_hourly.west, dat.psi_twenty_four_hourly.national, dat.psi_twenty_four_hourly.east, dat.psi_twenty_four_hourly.central, dat.psi_twenty_four_hourly.south, dat.psi_twenty_four_hourly.north]
+
+          for (i in regi) {
+
+            var qual = ""
+            var qColor = ""
+            var qFill = ""
+            var offset = ""
+            if (psis[i] < 51) {
+              qual = "Good"
+              qColor = "#15ff1c"
+              qFill = "#15ff1c"
+              offset = "-10px"
+            }
+            else if (psis[i] >= 51 && psis[i] < 101) {
+              qual = "Moderate"
+              qColor = "#e0ff00"
+              qFill = "#e0ff00"
+              offset = "-21px"
+            }
+            else if (psis[i] >= 101 && psis[i] < 201) {
+              qual = "Unhealthy"
+              qColor = "#ffbc00"
+              qFill = "#ffbc00"
+              offset = "-22px"
+            }
+            else if (psis[i] >= 201 && psis[i] < 301) {
+              qual = "Very Unhealthy"
+              qColor = "#ff3c00"
+              qFill = "#ff3c00"
+              offset = "-14px"
+            }
+            else if (psis[i] >= 300) {
+              qual = "HAZARDOUS"
+              qColor = "#7e0000"
+              qFill = "#7e0000"
+              offset = "-29px"
+            }
+            console.log(psis[i])
+            var lat = regi[i].label_location.latitude;
+            var lon = regi[i].label_location.longitude;
+            var circle = L.circle([lat, lon], {
+              color: qColor,
+              fillColor: qFill,
+              fillOpacity: 0.45,
+              radius: 2500,
+            }).addTo(map);
+
+            var text = L.marker([lat, lon],
+              {
+                icon: L.divIcon({
+                  className: "my-custom-icon",
+                  html: `<div style="margin-top:-10px;margin-left:-5px;font-size:18px; font-weight:bold">${psis[i]}</div>` +
+                    `<div style="margin-top:0px;margin-left:${offset};font-size:12px; font-weight:bold">${qual}</div>`
+                }),
+              }
+            ).addTo(map);
+          }
+        } catch (e) {
+          console.warn("Could not fetch data from database!");
+        }
+      };
+      myReq.send();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadTable();
+    });
+
+
+  </script>
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"
+    integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js"
+    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+    crossorigin="anonymous"></script>
+</body>
+
 </html>
